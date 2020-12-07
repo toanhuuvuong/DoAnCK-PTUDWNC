@@ -21,7 +21,7 @@ module.exports = {
 				});
 			})
 			.catch(function(err) {
-				console.trace(err);
+				return reject(err);
 			});
 		});
 	},
@@ -41,7 +41,7 @@ module.exports = {
 				});
 			})
 			.catch(function(err) {
-				console.trace(err);
+				return reject(err);
 			});
 		});
 	},
@@ -61,7 +61,7 @@ module.exports = {
         });
       })
       .catch(function(err) {
-				console.trace(err);
+				return reject(err);
 			});
 		});
 	},
@@ -81,7 +81,7 @@ module.exports = {
         });
       })
       .catch(function(err) {
-				console.trace(err);
+				return reject(err);
 			});
 		});
 	},
@@ -103,7 +103,7 @@ module.exports = {
         });
       })
       .catch(function(err) {
-				console.trace(err);
+				return reject(err);
 			});
 		});
 	},
@@ -124,7 +124,7 @@ module.exports = {
         });
       })
       .catch(function(err) {
-				console.trace(err);
+				return reject(err);
 			});
 		});
 	}

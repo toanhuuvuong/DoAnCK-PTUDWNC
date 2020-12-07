@@ -28,9 +28,10 @@ module.exports = {
     });
 	},
 	putById: function(req, res, next) {
-		const {id} = req.params;
+    const {id} = req.params;
+    const model = req.body;
 
-    userBUS.updateById(id, req.body)
+    userBUS.updateById(id, model)
     .then(function(data) {
 			if(data.result.ok !== 1) {
 				res.json({ok: false, messageCode: 'update_by_id_not_ok'});

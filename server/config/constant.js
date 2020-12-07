@@ -1,5 +1,5 @@
 module.exports = {
-    dbTableName: {
-        USER: 'User'
-    } 
+  dbTableName: {
+    USER: 'User'
+  } 
 };
