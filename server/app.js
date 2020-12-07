@@ -1,4 +1,3 @@
-const oneDay = 24 * 60 * 60 * 1000;
 require('dotenv').config();
 const express = require('express');
 const session = require('express-session');
@@ -16,7 +15,6 @@ require('./config/passport')(passport);
 // --- Require router 
 const userRouter = require('./routes/user');
 const loginRouter = require('./routes/login');
-const authRouter = require('./routes/auth');
 const registerRouter = require('./routes/register');
 const updateProfileRouter = require('./routes/update-profile');
 
@@ -67,7 +65,6 @@ app.use(function(req, res, next) {
 // --- URL
 app.use('/users', userRouter);
 app.use('/login', loginRouter);
-app.use('/auth', authRouter);
 app.use('/register', registerRouter);
 app.use('/update-profile', updateProfileRouter);
 

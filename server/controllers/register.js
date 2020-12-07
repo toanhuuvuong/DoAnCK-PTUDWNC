@@ -23,11 +23,13 @@ module.exports = {
 
           bcrypt.genSalt(10, function(err, salt) {
             if (err) {
+              res.json({ok: false, messageCode: 'bcrypt_gensalt_fail'});
               throw err;
             }
 
             bcrypt.hash(newUser.password, salt, function(err, hash) {
               if (err) {
+                res.json({ok: false, messageCode: 'bcrypt_hash_fail'});
                 throw err;
               }
 

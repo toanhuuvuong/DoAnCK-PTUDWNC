@@ -14,6 +14,7 @@ module.exports = {
 			} else {
 				bcrypt.compare(password, user.password, function(err, isMatch) {
 					if(err) {
+            res.json({ok: false, messageCode: 'bcrypt_compare_fail'});
 						throw err;
 					}
 
