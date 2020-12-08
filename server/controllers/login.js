@@ -1,39 +1,35 @@
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 
-const userBUS = require('../bus/user');
+const userBUS = require("../bus/user");
+const { STATUS } = require("../utils/constant");
+const { responseWithStatus, responseWithData } = require("../utils/utils");
 
 module.exports = {
-	post: function(req, res, next) {
-		const {username, password} = req.body;
-
-    userBUS.findByUsername(username)
-    .then(function(user) {
-			if(!user) {
-				res.json({ok: false, messageCode: 'not_register'});
+	post: async (req, res, next) => {
+		const { username, password } = req.body;
+		try {
+			const user = await userBUS.findByUsername(username);
+			if (!user) {
+				throw "Invalid Username"
 			} else {
-				bcrypt.compare(password, user.password, function(err, isMatch) {
-					if(err) {
-            res.json({ok: false, messageCode: 'bcrypt_compare_fail'});
-						throw err;
-					}
+				const isMatch = await bcrypt.compare(password, user.password);
 
-					if(isMatch) {
-						const payload = {
-              id: user.id.toString(),
-						};
-						const token = jwt.sign(payload, process.env.JWT_SECRET_KEY);
-            
-						res.json({ok: true, messageCode: "login_success", token: token, user: payload});
-					} else {
-						res.json({ok: false, messageCode: 'wrong_password'});
-					}
-				});
+				if (isMatch) {
+					const payload = {
+						id: user.user_id,
+					};
+					const token = jwt.sign(payload, process.env.JWT_SECRET_KEY);
+					res.cookie("jwt", token);
+					responseWithStatus(res, STATUS.SUCCESS);
+				} else {
+					throw "Invalid password"
+				}
 			}
-    })
-    .catch(function(err) {
-      console.trace(err);
-      res.json({ok: false, messageCode: 'find_by_username_fail'});
-    });
-	}
+		}
+		catch (err) {
+			console.trace(err);
+			res.json({ code: STATUS.UNAUTHORIZE.code, data: { message: err.message } });
+		};
+	},
 };

@@ -5,12 +5,8 @@ const { responseWithStatus } = require('../utils/utils');
 passportStrategy(passport);
 
 const ensureAuthenticated = function (req, res, next) {
-  passport.authenticate('jwt', { session: false }, function (err, user, info) {
-    if (err) {
-      return next(err);
-    }
-
-    if (!user) {
+  passport.authenticate('jwt', { session: false }, function (err, user) {
+    if (err || !user) {
       responseWithStatus(res, STATUS_CODE.UNAUTHORIZE);
     } else {
       next();
@@ -19,15 +15,11 @@ const ensureAuthenticated = function (req, res, next) {
 };
 
 const forwardAuthenticated = function (req, res, next) {
-  passport.authenticate('jwt', { session: false }, function (err, user, info) {
-    if (err) {
-      return next(err);
-    }
-
+  passport.authenticate('jwt', { session: false }, function (err, user) {
     if (!user) {
       next();
     } else {
-      responseWithStatus(res, STATUS_CODE.UNCHANGE);
+      res.redirect("/");
     }
   })(req, res, next);
 };
