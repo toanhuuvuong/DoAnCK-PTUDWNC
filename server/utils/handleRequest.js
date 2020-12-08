@@ -23,7 +23,7 @@ module.exports = {
         helper.responseWithStatus(res, STATUS.INTERNAL);
     }
   },
-  handleWriteRequest: async ({ req, res, sourceInput, fields, io, resource, logContent }) => {
+  handleWriteRequest: async ({ req, res, sourceInput, fields, io, resource }) => {
     const obj = {};
     if (sourceInput) helper.dataMapper(req[sourceInput], fields);
 

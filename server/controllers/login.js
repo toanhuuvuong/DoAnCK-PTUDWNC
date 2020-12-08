@@ -3,7 +3,7 @@ const jwt = require("jsonwebtoken");
 
 const userBUS = require("../bus/user");
 const { STATUS } = require("../utils/constant");
-const { responseWithStatus, responseWithData } = require("../utils/utils");
+const { responseWithStatus } = require("../utils/utils");
 
 module.exports = {
 	post: async (req, res, next) => {
@@ -17,7 +17,8 @@ module.exports = {
 
 				if (isMatch) {
 					const payload = {
-						id: user.user_id,
+						id: user.id,
+						username: user.username
 					};
 					const token = jwt.sign(payload, process.env.JWT_SECRET_KEY);
 					res.cookie("jwt", token);

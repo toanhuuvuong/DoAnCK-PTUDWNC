@@ -1,60 +1,34 @@
 const bcrypt = require('bcryptjs');
 
 const userBUS = require('../bus/user');
+const { STATUS } = require('../utils/constant');
+const { dataMapper, responseWithStatus } = require('../utils/utils');
 
 module.exports = {
-	post: function(req, res, next) {
-		const {username, name, password, password2} = req.body;
-        
-    if(password !== password2) {
-        res.json({ok: false, messageCode: 'password_not_match'});
-    } else {
-      userBUS.findByUsername(username)
-      .then(function(user) {
-        if(user) {
-          res.json({ok: false, messageCode: 'username_existed'});
-        } else {
-          const newUser = {
-            username: username,
-            password: password,
-            name: name,
-            avatar: null
-          };
+  post: async function (req, res, next) {
+    try {
+      const newUser = dataMapper(req.body, ["username", "name", "password"]);
 
-          bcrypt.genSalt(10, function(err, salt) {
-            if (err) {
-              res.json({ok: false, messageCode: 'bcrypt_gensalt_fail'});
-              throw err;
-            }
+      const salt = await bcrypt.genSalt(10)
+      const hash = await bcrypt.hash(newUser.password, salt)
+      newUser.password = hash;
 
-            bcrypt.hash(newUser.password, salt, function(err, hash) {
-              if (err) {
-                res.json({ok: false, messageCode: 'bcrypt_hash_fail'});
-                throw err;
-              }
-
-              newUser.password = hash;
-
-              userBUS.insertOne(newUser)
-              .then(function(user) {
-                if(!user) {
-                  res.json({ok: false, messageCode: 'register_fail'});
-                } else {
-                  res.json({ok: true, messageCode: 'register_success', item: user});
-                }
-              })
-              .catch(function(err) {
-                console.trace(err);
-                res.json({ok: false, messageCode: 'register_fail'});
-              });
-            });
-          });
-        }
-      })
-      .catch(function(err) {
-        console.trace(err);
-        res.json({ok: false, messageCode: 'register_fail'});
-      });
+      const result = await userBUS.add(newUser)
+      if (result.affectedRows) {
+        //create data to response
+        const payload = {
+          id: result.insertId,
+          username: newUser.username
+        };
+        const token = jwt.sign(payload, process.env.JWT_SECRET_KEY);
+        res.cookie("jwt", token);
+        responseWithStatus(res, STATUS.SUCCESS);
+      } else throw "Register failed"
     }
-	}
+    catch (err) {
+      console.trace(err);
+      res.json({ code: STATUS.UNAUTHORIZE.code, data: { message: err.message } });
+    };
+
+  }
 };

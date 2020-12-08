@@ -1,21 +1,14 @@
 const userBUS = require('../bus/user');
+const { handleWriteRequest } = require('../utils/handleRequest');
 
 module.exports = {
 	put: function(req, res, next) {
-    const {id} = req.params;
-    const model = req.body;
-
-    userBUS.updateById(id, model)
-    .then(function(data) {
-			if(data.result.ok !== 1) {
-				res.json({ok: false, messageCode: 'update_fail'});
-			} else {
-				res.json({ok: true, messageCode: 'update_success'});
-			}
+    handleWriteRequest({
+      req,res,
+      sourceInput:"body",
+      fields:["id","name"],
+      io:userBUS.edit,
+      resource:"users"
     })
-    .catch(function(err) {
-      console.trace(err);
-      res.json({ok: false, messageCode: 'update_fail'});
-    });
 	}
 };
