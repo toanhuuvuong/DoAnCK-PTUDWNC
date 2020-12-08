@@ -20,9 +20,7 @@ module.exports = {
 
 					if(isMatch) {
 						const payload = {
-              id: user._id.toString(),
-              username: user.username,
-							name: user.name
+              id: user.id.toString(),
 						};
 						const token = jwt.sign(payload, process.env.JWT_SECRET_KEY);
             
