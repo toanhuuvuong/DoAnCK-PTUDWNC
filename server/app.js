@@ -5,10 +5,12 @@ const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const cors = require('cors'); // cross-origin resource sharing
 
+// --- Config DB connection 
 const dbConfig = require('./config/db');
 const connectMongo = require('connect-mongo');
 const MongoStoreFactory = connectMongo(session);
 
+// --- Config Passport
 const passport = require('passport');
 require('./config/passport')(passport);
 
@@ -16,7 +18,13 @@ require('./config/passport')(passport);
 const userRouter = require('./routes/user');
 const loginRouter = require('./routes/login');
 const registerRouter = require('./routes/register');
-const updateProfileRouter = require('./routes/update-profile');
+const authRouter = require('./routes/auth');
+// User routes
+const updateProfileRouter = require('./routes/user/update-profile');
+const changePasswordRouter = require('./routes/user/change-password');
+// Admin routes
+const adminUpdateProfileRouter = require('./routes/admin/update-profile');
+const adminChangePasswordRouter = require('./routes/admin/change-password');
 
 const app = express();
 
@@ -37,6 +45,7 @@ app.use(cors({
 app.use(cookieParser());
 
 // express session
+const oneDay = 24 * 60 * 60 * 1000;
 const sessionOptions = {
 	secret: 'secret',
 	resave: true,
@@ -46,9 +55,8 @@ const sessionOptions = {
 	}),
 	cookie: { 
 		secure: true,
-		maxAge: 24 * 60 * 60 * 1000, 
-		expires: new Date(Date.now() + 24 * 60 * 60 * 1000),
-		sameSite: 'none'
+		maxAge: oneDay, 
+		expires: new Date(Date.now() + oneDay)
 	}
 };
 app.use(session(sessionOptions));
@@ -56,6 +64,9 @@ app.use(session(sessionOptions));
 // passport middleware
 app.use(passport.initialize());
 app.use(passport.session());
+
+// middleware
+require('./middlewares/middlewares')(app);
 
 // global variables
 app.use(function(req, res, next) {
@@ -66,6 +77,12 @@ app.use(function(req, res, next) {
 app.use('/users', userRouter);
 app.use('/login', loginRouter);
 app.use('/register', registerRouter);
+app.use('/auth', authRouter);
+// User URL
 app.use('/update-profile', updateProfileRouter);
+app.use('/change-password', changePasswordRouter);
+// Admin URL
+app.use('/admin/update-profile', adminUpdateProfileRouter);
+app.use('/admin/change-password', adminChangePasswordRouter);
 
 module.exports = app;

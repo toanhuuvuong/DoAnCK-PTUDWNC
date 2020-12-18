@@ -1,36 +1,42 @@
-const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
-const userBUS = require("../bus/user");
-const { STATUS } = require("../utils/constant");
-const { responseWithStatus } = require("../utils/utils");
+const userBUS = require('../bus/user');
 
 module.exports = {
-	post: async (req, res, next) => {
-		const { username, password } = req.body;
-		try {
-			const user = await userBUS.findByUsername(username);
-			if (!user) {
-				throw "Invalid Username"
-			} else {
-				const isMatch = await bcrypt.compare(password, user.password);
+	post: function(req, res, next) {
+		const {username, password} = req.body;
 
-				if (isMatch) {
-					const payload = {
-						id: user.id,
-						username: user.username
-					};
-					const token = jwt.sign(payload, process.env.JWT_SECRET_KEY);
-					res.cookie("jwt", token);
-					responseWithStatus(res, STATUS.SUCCESS);
-				} else {
-					throw "Invalid password"
-				}
+    userBUS.findByUsername(username)
+    .then(function(user) {
+			if(!user || !user.password) {
+				res.json({ok: false, messageCode: 'not_register'});
+			} else {
+				bcrypt.compare(password, user.password, function(err, isMatch) {
+					if(err) {
+            res.json({ok: false, messageCode: 'bcrypt_compare_fail'});
+						throw err;
+					}
+
+					if(isMatch) {
+						const payload = {
+              id: user._id.toString(),
+              username: user.username,
+              name: user.name,
+              role: user.role
+						};
+						const token = jwt.sign(payload, process.env.JWT_SECRET_KEY);
+            
+						res.json({ok: true, messageCode: "login_success", token: token, userId: payload.id, role: payload.role});
+					} else {
+						res.json({ok: false, messageCode: 'wrong_password'});
+					}
+				});
 			}
-		}
-		catch (err) {
-			console.trace(err);
-			res.json({ code: STATUS.UNAUTHORIZE.code, data: { message: err.message } });
-		};
-	},
+    })
+    .catch(function(err) {
+      console.trace(err);
+      res.json({ok: false, messageCode: 'find_by_username_fail'});
+    });
+	}
 };

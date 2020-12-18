@@ -1,30 +1,36 @@
 const passport = require('passport');
-const passportStrategy = require('../config/passport');
-const { STATUS_CODE } = require('../utils/constant');
-const { responseWithStatus } = require('../utils/utils');
-passportStrategy(passport);
 
-const ensureAuthenticated = function (req, res, next) {
-  passport.authenticate('jwt', { session: false }, function (err, user) {
-    if (err || !user) {
-      responseWithStatus(res, STATUS_CODE.UNAUTHORIZE);
+const ensureAuthenticated = function(req, res, next) {
+  passport.authenticate('jwt', { session: false }, function(err, user, info) { 
+    if (err) { 
+      return next(err); 
+    } 
+    if (!user) { 
+      res.json({ok: false, messageCode: 'not_authenticated'});
     } else {
       next();
     }
   })(req, res, next);
 };
 
-const forwardAuthenticated = function (req, res, next) {
-  passport.authenticate('jwt', { session: false }, function (err, user) {
-    if (!user) {
+const forwardAuthenticated = function(req, res, next) {
+  passport.authenticate('jwt', { session: false }, function(err, user, info) { 
+    if (err) { 
+      return next(err); 
+    } 
+    if (!user) { 
       next();
     } else {
-      res.redirect("/");
+      res.json({ok: false, messageCode: 'forward_authenticated'});
     }
   })(req, res, next);
 };
 
 module.exports = {
-  ensureAuthenticated,
-  forwardAuthenticated
+  ensureAuthenticated: function(req, res, next) {
+    return ensureAuthenticated(req, res, next);
+  },
+  forwardAuthenticated: function(req, res, next) {
+    return forwardAuthenticated(req, res, next);
+  }
 };
